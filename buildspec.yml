@@ -1,0 +1,10 @@
+version: 0.2
+phases:
+  post_build:
+    commands:
+      - zip -r site.zip ./project/*
+artifacts:
+  files:
+    - appspec.yml
+    - site.zip
+    - scripts/*

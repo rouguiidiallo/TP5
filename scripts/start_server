@@ -1,0 +1,5 @@
+#!/bin/bash
+
+sudo systemctl daemon-reload
+sudo systemctl start app-supvinci.service
+sudo systemctl status app-supvinci.service

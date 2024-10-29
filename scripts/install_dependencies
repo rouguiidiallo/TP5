@@ -1,0 +1,5 @@
+#!/bin/bash
+# This file is scripts/install_dependencies.sh
+
+yum update
+yum install -y python3 python3-pip
