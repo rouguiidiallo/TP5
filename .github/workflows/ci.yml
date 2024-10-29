@@ -1,5 +1,4 @@
-
-name: Publish Docker image 
+name: Publish Docker image and deploy to Azure VM
 
 on:
   push:
@@ -8,28 +7,42 @@ on:
 
 jobs:
   push_to_registry:
-    name: Push Docker image to Docker Hub
+    name: Push Docker image to Docker Hub and deploy to Azure VM
     runs-on: ubuntu-latest
     steps:
       - name: Check out the repo
         uses: actions/checkout@v3
       
       - name: Log in to Docker Hub
-        uses: docker/login-action@f054a8b539a109f9f41c372932f1ae047eff08c9
+        uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
       
       - name: Extract metadata (tags, labels) for Docker
         id: meta
-        uses: docker/metadata-action@98669ae865ea3cffbcbaa878cf57c20bbf1c6c38
+        uses: docker/metadata-action@v3
         with:
           images: rouguii/python-app
       
       - name: Build and push Docker image
-        uses: docker/build-push-action@ad44023a93711e3deb337508980b4b5e9bcdc5dc
+        uses: docker/build-push-action@v3
         with:
           context: .
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+      
+      - name: Add SSH key
+        uses: webfactory/ssh-agent@v0.5.3
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+      
+      - name: Deploy to Azure VM via SSH
+        run: |
+          ssh -o StrictHostKeyChecking=no your_username@51.124.122.36 << 'EOF'
+            docker pull rouguii/python-app:${{ steps.meta.outputs.tags }}
+            docker stop python-app || true
+            docker rm python-app || true
+            docker run -d --name python-app -p 80:80 rouguii/python-app:${{ steps.meta.outputs.tags }}
+          EOF
