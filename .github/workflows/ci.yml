@@ -46,11 +46,12 @@ jobs:
           ssh -o StrictHostKeyChecking=no azureuser@172.201.227.175 << 'EOF'
             # Afficher les balises d'image pour le débogage
             echo "Docker images tags: ${{ steps.meta.outputs.tags }}"
-          
-            # Tirer la nouvelle image Docker
-            docker pull rouguii/python-app:main
             docker stop python-app || true
             docker rm python-app || true
+            # Tirer la nouvelle image Docker
+            docker pull rouguii/python-app:main
+            
+            
             # Exécuter le nouveau conteneur
             docker run -d --name python-app -p 8088:8088 rouguii/python-app:main
           EOF
