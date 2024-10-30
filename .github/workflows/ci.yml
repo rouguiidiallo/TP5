@@ -38,7 +38,7 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
       
-      - name: Deploy to azure VM via SSH
+      - name: Deploy to Azure VM via SSH
         run: |
           ssh -o StrictHostKeyChecking=no azureuser@51.124.122.36 << 'EOF'
             docker pull rouguii/python-app:${{ steps.meta.outputs.tags }}
