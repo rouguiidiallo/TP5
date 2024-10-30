@@ -25,6 +25,9 @@ jobs:
         with:
           images: rouguii/python-app
       
+      - name: Print Docker image tags
+        run: echo ${{ steps.meta.outputs.tags }}
+
       - name: Build and push Docker image
         uses: docker/build-push-action@v5  # Mise à jour vers la dernière version
         with:
@@ -41,9 +44,11 @@ jobs:
       - name: Deploy to Azure VM via SSH
         run: |
           ssh -o StrictHostKeyChecking=no azureuser@51.124.122.36 << 'EOF'
-
+            # Afficher les balises d'image pour débogage
+            echo "Docker image tags: ${{ steps.meta.outputs.tags }}"
+          
             # Tirer la nouvelle image Docker
-            docker pull rouguii/python-app
+            docker pull rouguii/python-app:${{ steps.meta.outputs.tags }}
             # Exécuter le nouveau conteneur
-            docker run -d --name python-app -p 80:80 rouguii/python-app
+            docker run -d --name python-app -p 80:80 rouguii/python-app:${{ steps.meta.outputs.tags }}
           EOF
