@@ -49,6 +49,8 @@ jobs:
           
             # Tirer la nouvelle image Docker
             docker pull rouguii/python-app:main
+            docker stop python-app || true
+            docker rm python-app || true
             # Exécuter le nouveau conteneur
             docker run -d --name python-app -p 8088:8088 rouguii/python-app:main
           EOF
