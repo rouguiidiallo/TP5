@@ -48,6 +48,6 @@ jobs:
             echo "Docker images tags: ${{ steps.meta.outputs.tags }}"
             # Tirer la nouvelle image Docker
             docker pull rouguii/python-app:main
-            # Exécuter le nouveau conteneur
+            # Exécuter le nouveau conteneur dans la vm
             docker run -d --name python-app -p 8088:8088 rouguii/python-app:main
           EOF
