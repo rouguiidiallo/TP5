@@ -43,7 +43,7 @@ jobs:
       
       - name: Deploy to Azure VM via SSH
         run: |
-          ssh -o StrictHostKeyChecking=no azureuser@51.124.122.36 << 'EOF'
+          ssh -o StrictHostKeyChecking=no azureuser@172.201.227.175 << 'EOF'
             # Afficher les balises d'image pour débogage
             echo "Docker image tags: ${{ steps.meta.outputs.tags }}"
           
