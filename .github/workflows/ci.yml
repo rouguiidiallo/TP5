@@ -43,7 +43,7 @@ jobs:
           ssh -o StrictHostKeyChecking=no azureuser@51.124.122.36 << 'EOF'
             # Ajouter l'utilisateur azureuser au groupe Docker
             sudo usermod -aG docker azureuser
-            # Appliquer les changements de groupe
+            # appliquer les changements de groupe
             newgrp docker
             # Tirer la nouvelle image Docker
             docker pull rouguii/python-app:${{ steps.meta.outputs.tags }}
