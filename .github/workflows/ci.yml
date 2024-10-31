@@ -43,6 +43,6 @@ jobs:
           ssh -o StrictHostKeyChecking=no azureuser@172.201.227.175 << 'EOF'
             echo "Docker images tags: ${{ steps.meta.outputs.tags }}"
             docker pull rouguii/python-app:main
-            docker run -d --name python-app -p 8088:8088
+            docker run -d --name python-app -p 8088:8088 rouguii/python-app:main
               
           EOF
