@@ -25,7 +25,7 @@ jobs:
         with:
           images: rouguii/python-app
       
-      - name: Construire et pousser l'image Docker
+      - name: Construire et pousser l'image Docker.
         uses: docker/build-push-action@v5
         with:
           context: .
