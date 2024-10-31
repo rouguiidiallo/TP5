@@ -54,6 +54,11 @@ jobs:
             docker pull rouguii/python-app:main
             docker run -d --name python-app -p 8088:8088 rouguii/python-app:main
           EOF
+        
+      - name: Ajouter la clé SSH de la vm-staging
+        uses: webfactory/ssh-agent@v0.5.4
+        with:
+          ssh-private-key: ${{ secrets.SSH_STAGING_PRIVATE_KEY }}
       - name: deploiement sur la VM staging
         env:
           DB_HOST: ${{ secrets.DB_HOST }}
