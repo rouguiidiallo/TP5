@@ -43,10 +43,6 @@ jobs:
           ssh -o StrictHostKeyChecking=no azureuser@172.201.227.175 << 'EOF'
             echo "Docker images tags: ${{ steps.meta.outputs.tags }}"
             docker pull rouguii/python-app:main
-            docker run -d --name python-app -p 8088:8088 \
-              -e DATABASE_HOST=20.13.8.137 \
-              -e DATABASE_NAME=mydatabase \
-              -e DATABASE_USER=myuser \
-              -e DATABASE_PASSWORD=mypassword \
-              rouguii/python-app:main
+            docker run -d --name python-app -p 8088:8088
+              
           EOF
