@@ -38,7 +38,7 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
       
-      - name: Déployer sur Azure VM via SSH
+      - name: Deploiement on Prod
         
         run: |
           ssh -o StrictHostKeyChecking=no azureuser@172.201.227.175 << 'EOF'
