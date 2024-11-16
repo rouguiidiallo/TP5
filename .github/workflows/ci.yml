@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-  workflow_dispatch:  # Permet de déclencher manuellement le workflow
+  workflow_dispatch:  # Permet de déclencher manuellement le workflow à revoir
 
 jobs:
   push_to_registry:
