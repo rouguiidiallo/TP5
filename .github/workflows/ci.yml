@@ -62,7 +62,7 @@ jobs:
           DB_NAME: ${{ secrets.DB_NAME }}
           STAGING_ENV: true
         run: |
-          ssh -o StrictHostKeyChecking=no azureuser@4.180.35.17 << 'EOF'
+          ssh -o StrictHostKeyChecking=no azureuser@20.199.82.209 << 'EOF'
             echo "Deploying to Staging environment..."
             echo "Pulling Docker image..."
             docker pull rouguii/python-app:main-latest
@@ -130,7 +130,7 @@ jobs:
           DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
           DB_NAME: ${{ secrets.DB_NAME }}
         run: |
-          ssh -o StrictHostKeyChecking=no azureuser@172.201.227.175 << 'EOF'
+          ssh -o StrictHostKeyChecking=no azureuser@20.199.82.73 << 'EOF'
             echo "Deploying to Production environment..."
             echo "Pulling Docker image..."
             docker pull rouguii/python-app:main-latest
