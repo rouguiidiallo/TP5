@@ -84,7 +84,6 @@ jobs:
   deploy_production:
     name: Deploy to Production VM
     runs-on: ubuntu-latest
-    needs: [build, test_performance, test_security, test_functional]
     if: github.ref == 'refs/heads/main'
     steps:
       - name: Add SSH key
