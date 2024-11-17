@@ -81,7 +81,6 @@ jobs:
               rouguii/python-app:main-latest
           EOF
 
-
   deploy_production:
     name: Deploy to Production VM
     runs-on: ubuntu-latest
