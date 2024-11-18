@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - 'feature/*'
   pull_request:
     branches:
       - main
@@ -18,10 +19,27 @@ on:
           - production
 
 jobs:
+  check_version_and_changelog:
+    name: Check VERSION and Changelog.md
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Check if VERSION and Changelog.md are modified
+        id: check_files
+        run: |
+          if git diff --exit-code HEAD^ HEAD -- VERSION Changelog.md; then
+            echo "VERSION and Changelog.md have not been modified."
+            exit 1
+          else
+            echo "VERSION and Changelog.md are modified."
+          fi
+
   build:
     name: Build Docker image
     runs-on: ubuntu-latest
-    if: github.event_name != 'workflow_dispatch' || github.event.inputs.deploy_target != 'production'  # Ce job ne s'exécute pas pour production manuellement
+    needs: check_version_and_changelog
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -41,20 +59,26 @@ jobs:
         with:
           images: rouguii/python-app
 
+      - name: Read version from VERSION file
+        id: get_version
+        run: |
+          VERSION=$(cat VERSION)
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
           context: .
           push: true
           tags: |
-            ${{ steps.meta.outputs.tags }}
-            ${{ steps.meta.outputs.tags }}-latest
+            rouguii/python-app:${{ env.VERSION }}
+            rouguii/python-app:${{ steps.meta.outputs.tags }}-latest
           labels: ${{ steps.meta.outputs.labels }}
 
   deploy_staging:
     name: Déployer sur la VM de staging
     runs-on: ubuntu-latest
-    needs: build
+    needs: [check_version_and_changelog, build]
     if: github.ref == 'refs/heads/main' && (github.event_name != 'workflow_dispatch' || github.event.inputs.deploy_target == 'staging')  # S'exécute si c'est un push ou si le deploy_target est staging
     steps:
       - name: Ajouter la clé SSH
@@ -74,7 +98,7 @@ jobs:
           ssh -o StrictHostKeyChecking=no azureuser@20.199.82.209 << 'EOF'
             echo "Déploiement dans l'environnement de staging..."
             echo "Récupération de l'image Docker..."
-            docker pull rouguii/python-app:main-latest
+            docker pull rouguii/python-app:${{ env.VERSION }}
             if [ "$(docker ps -q -f name=python-app-staging)" ]; then
               echo "Arrêt et suppression du conteneur existant..."
               docker stop python-app-staging
@@ -87,7 +111,7 @@ jobs:
               -e DB_USER=$DB_USER \
               -e DB_PASSWORD=$DB_PASSWORD \
               -e DB_NAME=$DB_NAME \
-              rouguii/python-app:main-latest
+              rouguii/python-app:${{ env.VERSION }}
           EOF
 
   functional_tests:
@@ -115,6 +139,7 @@ jobs:
   deploy_production:
     name: Déployer sur la VM de production
     runs-on: ubuntu-latest
+    needs: [check_version_and_changelog, build, functional_tests]
     if: github.event_name == 'workflow_dispatch' && github.event.inputs.deploy_target == 'production'  # Ce job s'exécute uniquement pour un déclenchement manuel en production
     steps:
       - name: Checkout code
@@ -136,7 +161,7 @@ jobs:
           ssh -o StrictHostKeyChecking=no azureuser@20.199.82.73 << 'EOF'
             echo "Déploiement dans l'environnement de production..."
             echo "Récupération de l'image Docker..."
-            docker pull rouguii/python-app:main-latest
+            docker pull rouguii/python-app:${{ env.VERSION }}
             CONTAINER_ID=$(docker ps -aq -f name=python-app-production)
             if [ ! -z "$CONTAINER_ID" ]; then
               echo "Arrêt et suppression du conteneur existant..."
@@ -150,6 +175,5 @@ jobs:
               -e DB_USER=$DB_USER \
               -e DB_PASSWORD=$DB_PASSWORD \
               -e DB_NAME=$DB_NAME \
-              rouguii/python-app:main-latest
+              rouguii/python-app:${{ env.VERSION }}
           EOF
-   
