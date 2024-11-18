@@ -140,6 +140,7 @@ jobs:
             echo "Récupération de l'image Docker..."
             docker pull rouguii/python-app:main-latest
             CONTAINER_ID=$(docker ps -aq -f name=python-app-production)
+            #récuperer l'image depuis le docker hub et verifier s'il n'y a pas de conteneur qui est entrain de tourner
             if [ ! -z "$CONTAINER_ID" ]; then
               echo "Arrêt et suppression du conteneur existant..."
               docker stop $CONTAINER_ID
