@@ -110,7 +110,8 @@ jobs:
         env:
           BASE_URL: "http://20.199.82.209:8089"  # URL de la VM de staging
         run: |
-          python -m unittest discover tests
+          python -m unittest discover -s tests -p "test*.py"
+
 
 
   deploy_production:
