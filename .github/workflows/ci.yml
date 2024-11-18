@@ -104,10 +104,11 @@ jobs:
             echo "Déploiement dans l'environnement de production..."
             echo "Récupération de l'image Docker..."
             docker pull rouguii/python-app:main-latest
-            if [ "$(docker ps -q -f name=python-app-production)" ]; then
+            CONTAINER_ID=$(docker ps -aq -f name=python-app-production)
+            if [ ! -z "$CONTAINER_ID" ]; then
               echo "Arrêt et suppression du conteneur existant..."
-              docker stop python-app-production
-              docker rm python-app-production
+              docker stop $CONTAINER_ID
+              docker rm $CONTAINER_ID
             fi
             echo "Lancement du conteneur Docker..."
             docker run -d --name python-app-production -p 8088:8088 \
