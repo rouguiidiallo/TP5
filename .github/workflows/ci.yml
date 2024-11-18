@@ -87,6 +87,9 @@ jobs:
     # Exécuter seulement lors d'un déclenchement manuel
     if: ${{ github.event_name == 'workflow_dispatch' }} 
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
       - name: Ajouter la clé SSH
         uses: webfactory/ssh-agent@v0.5.4
         with:
