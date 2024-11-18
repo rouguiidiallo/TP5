@@ -72,7 +72,7 @@ jobs:
           push: true
           tags: |
             rouguii/python-app:${{ env.VERSION }}
-            rouguii/python-app:${{ steps.meta.outputs.tags }}-latest
+            rouguii/python-app:latest
           labels: ${{ steps.meta.outputs.labels }}
 
   deploy_staging:
