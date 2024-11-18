@@ -84,7 +84,8 @@ jobs:
   deploy_production:
     name: Déployer sur la VM de production
     runs-on: ubuntu-latest
-    if: ${{ github.event_name == 'workflow_dispatch' }} # Exécuter seulement lors d'un déclenchement manuel
+    # Exécuter seulement lors d'un déclenchement manuel
+    if: ${{ github.event_name == 'workflow_dispatch' }} 
     steps:
       - name: Ajouter la clé SSH
         uses: webfactory/ssh-agent@v0.5.4
