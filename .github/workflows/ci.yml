@@ -152,3 +152,4 @@ jobs:
               -e DB_NAME=$DB_NAME \
               rouguii/python-app:main-latest
           EOF
+   
