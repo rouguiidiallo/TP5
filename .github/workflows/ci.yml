@@ -7,7 +7,7 @@ on:
   pull_request:
     branches:
       - main
-  workflow_dispatch:
+  workflow_dispatch: # This allows for manual triggering of the entire workflow
 
 jobs:
   build:
@@ -84,7 +84,8 @@ jobs:
   deploy_production:
     name: Deploy to Production VM
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
+    needs: build
+    if: ${{ github.event_name == 'workflow_dispatch' }}
     steps:
       - name: Add SSH key
         uses: webfactory/ssh-agent@v0.5.4
