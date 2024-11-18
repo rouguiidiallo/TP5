@@ -7,7 +7,7 @@ on:
   pull_request:
     branches:
       - main
-  workflow_dispatch: # This allows for manual triggering of the production deployment
+  workflow_dispatch: # Permet le déclenchement manuel du workflow
 
 jobs:
   build:
@@ -43,17 +43,17 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
     
   deploy_staging:
-    name: Deploy to Staging VM
+    name: Déployer sur la VM de staging
     runs-on: ubuntu-latest
     needs: build
     if: github.ref == 'refs/heads/main'
     steps:
-      - name: Add SSH key
+      - name: Ajouter la clé SSH
         uses: webfactory/ssh-agent@v0.5.4
         with:
           ssh-private-key: ${{ secrets.SSH_STAGING_PRIVATE_KEY }}
           
-      - name: Deploy to Staging
+      - name: Déployer sur la VM de staging
         env:
           DB_HOST: ${{ secrets.DB_HOST }}
           DB_PORT: ${{ secrets.DB_PORT }}
@@ -63,15 +63,15 @@ jobs:
           STAGING_ENV: true
         run: |
           ssh -o StrictHostKeyChecking=no azureuser@20.199.82.209 << 'EOF'
-            echo "Deploying to Staging environment..."
-            echo "Pulling Docker image..."
+            echo "Déploiement dans l'environnement de staging..."
+            echo "Récupération de l'image Docker..."
             docker pull rouguii/python-app:main-latest
             if [ "$(docker ps -q -f name=python-app-staging)" ]; then
-              echo "Stopping and removing existing container..."
+              echo "Arrêt et suppression du conteneur existant..."
               docker stop python-app-staging
               docker rm python-app-staging
             fi
-            echo "Running Docker container..."
+            echo "Lancement du conteneur Docker..."
             docker run -d --name python-app-staging -p 8089:8088 \
               -e DB_HOST=$DB_HOST \
               -e DB_PORT=$DB_PORT \
@@ -82,17 +82,17 @@ jobs:
           EOF
 
   deploy_production:
-    name: Deploy to Production VM
+    name: Déployer sur la VM de production
     runs-on: ubuntu-latest
     needs: build
-    if: ${{ github.event_name == 'workflow_dispatch' }} # Run only on manual trigger
+    if: ${{ github.event_name == 'workflow_dispatch' }} # Exécuter seulement lors d'un déclenchement manuel
     steps:
-      - name: Add SSH key
+      - name: Ajouter la clé SSH
         uses: webfactory/ssh-agent@v0.5.4
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
       
-      - name: Deploy to Production
+      - name: Déployer sur la VM de production
         env:
           DB_HOST: ${{ secrets.DB_HOST }}
           DB_PORT: ${{ secrets.DB_PORT }}
@@ -101,15 +101,15 @@ jobs:
           DB_NAME: ${{ secrets.DB_NAME }}
         run: |
           ssh -o StrictHostKeyChecking=no azureuser@20.199.82.73 << 'EOF'
-            echo "Deploying to Production environment..."
-            echo "Pulling Docker image..."
+            echo "Déploiement dans l'environnement de production..."
+            echo "Récupération de l'image Docker..."
             docker pull rouguii/python-app:main-latest
             if [ "$(docker ps -q -f name=python-app-production)" ]; then
-              echo "Stopping and removing existing container..."
+              echo "Arrêt et suppression du conteneur existant..."
               docker stop python-app-production
               docker rm python-app-production
             fi
-            echo "Running Docker container..."
+            echo "Lancement du conteneur Docker..."
             docker run -d --name python-app-production -p 8088:8088 \
               -e DB_HOST=$DB_HOST \
               -e DB_PORT=$DB_PORT \
