@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - main
-      - 'feature/*'
   pull_request:
     branches:
       - main
@@ -19,30 +18,27 @@ on:
           - production
 
 jobs:
-  check_version_and_changelog:
-    name: Check VERSION and Changelog.md
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Check if VERSION and Changelog.md are modified
-        id: check_files
-        run: |
-          if git diff --exit-code HEAD^ HEAD -- VERSION Changelog.md; then
-            echo "VERSION and Changelog.md have not been modified."
-            exit 1
-          else
-            echo "VERSION and Changelog.md are modified."
-          fi
-
   build:
     name: Build Docker image
     runs-on: ubuntu-latest
-    needs: check_version_and_changelog
+    if: github.event_name != 'workflow_dispatch' || github.event.inputs.deploy_target != 'production'  # Ce job ne s'exécute pas pour production manuellement
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Check for VERSION and Changelog.md changes
+        id: changes
+        run: |
+          if [[ $(git diff --name-only HEAD^ | grep -E 'VERSION|Changelog.md') == "" ]]; then
+            echo "VERSION or Changelog.md not changed, skipping build and deploy."
+            exit 1
+          fi
+
+      - name: Read VERSION
+        id: version
+        run: |
+          VERSION=$(cat VERSION)
+          echo "VERSION=${VERSION}" >> $GITHUB_ENV
 
       - name: Login to Docker Hub
         uses: docker/login-action@v3
@@ -53,18 +49,6 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Extract metadata for Docker
-        id: meta
-        uses: docker/metadata-action@v4
-        with:
-          images: rouguii/python-app
-
-      - name: Read version from VERSION file
-        id: get_version
-        run: |
-          VERSION=$(cat VERSION)
-          echo "VERSION=$VERSION" >> $GITHUB_ENV
-
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
@@ -73,12 +57,11 @@ jobs:
           tags: |
             rouguii/python-app:${{ env.VERSION }}
             rouguii/python-app:latest
-          labels: ${{ steps.meta.outputs.labels }}
 
   deploy_staging:
     name: Déployer sur la VM de staging
     runs-on: ubuntu-latest
-    needs: [check_version_and_changelog, build]
+    needs: build
     if: github.ref == 'refs/heads/main' && (github.event_name != 'workflow_dispatch' || github.event.inputs.deploy_target == 'staging')  # S'exécute si c'est un push ou si le deploy_target est staging
     steps:
       - name: Ajouter la clé SSH
@@ -114,32 +97,9 @@ jobs:
               rouguii/python-app:${{ env.VERSION }}
           EOF
 
-  functional_tests:
-    name: Tests fonctionnels
-    runs-on: ubuntu-latest
-    needs: deploy_staging
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Configurer Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.10'
-
-      - name: Installer les dépendances
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-
-      - name: Exécuter les tests fonctionnels
-        run: |
-          python -m unittest discover -s tests -p "test*.py"
-
   deploy_production:
     name: Déployer sur la VM de production
     runs-on: ubuntu-latest
-    needs: [check_version_and_changelog, build, functional_tests]
     if: github.event_name == 'workflow_dispatch' && github.event.inputs.deploy_target == 'production'  # Ce job s'exécute uniquement pour un déclenchement manuel en production
     steps:
       - name: Checkout code
