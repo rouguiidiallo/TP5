@@ -90,29 +90,27 @@ jobs:
               rouguii/python-app:main-latest
           EOF
 
-  # Ajout des tests fonctionnels
-  test_functional_staging:
-    name: Tests fonctionnels sur la VM de staging
+  functional_tests:
+    name: Tests fonctionnels
     runs-on: ubuntu-latest
     needs: deploy_staging
-    if: github.event_name != 'workflow_dispatch' || github.event.inputs.deploy_target == 'staging'  # Tests uniquement si on déploie sur staging
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Configurer Python et les dépendances
+      - name: Configurer Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Installer les dépendances
         run: |
-          python -m venv venv
-          source venv/bin/activate
+          python -m pip install --upgrade pip
           pip install -r requirements.txt
 
-      - name: Lancer les tests fonctionnels
-        env:
-          BASE_URL: "http://20.199.82.209:8089"  # URL de la VM de staging
+      - name: Exécuter les tests fonctionnels
         run: |
           python -m unittest discover -s tests -p "test*.py"
-
-
 
   deploy_production:
     name: Déployer sur la VM de production
@@ -140,7 +138,6 @@ jobs:
             echo "Récupération de l'image Docker..."
             docker pull rouguii/python-app:main-latest
             CONTAINER_ID=$(docker ps -aq -f name=python-app-production)
-            #récuperer l'image depuis le docker hub et verifier s'il n'y a pas de conteneur qui est entrain de tourner
             if [ ! -z "$CONTAINER_ID" ]; then
               echo "Arrêt et suppression du conteneur existant..."
               docker stop $CONTAINER_ID
