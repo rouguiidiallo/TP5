@@ -90,6 +90,28 @@ jobs:
               rouguii/python-app:main-latest
           EOF
 
+  # Ajout des tests fonctionnels
+  test_functional_staging:
+    name: Tests fonctionnels sur la VM de staging
+    runs-on: ubuntu-latest
+    needs: deploy_staging
+    if: github.event_name != 'workflow_dispatch' || github.event.inputs.deploy_target == 'staging'  # Tests uniquement si on déploie sur staging
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configurer Python et les dépendances
+        run: |
+          python -m venv venv
+          source venv/bin/activate
+          pip install -r requirements.txt
+
+      - name: Lancer les tests fonctionnels
+        env:
+          BASE_URL: "http://20.199.82.209:8089"  # URL de la VM de staging
+        run: |
+          python -m unittest discover tests/functional_tests
+
   deploy_production:
     name: Déployer sur la VM de production
     runs-on: ubuntu-latest
