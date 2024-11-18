@@ -25,11 +25,13 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Récupérer l'historique complet pour éviter les erreurs de HEAD^
 
       - name: Check for VERSION and Changelog.md changes
         id: changes
         run: |
-          if [[ $(git diff --name-only HEAD^ | grep -E 'VERSION|Changelog.md') == "" ]]; then
+          if [[ $(git diff --name-only HEAD^..HEAD | grep -E 'VERSION|Changelog.md') == "" ]]; then
             echo "VERSION or Changelog.md not changed, skipping build and deploy."
             exit 1
           fi
@@ -104,6 +106,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Récupérer l'historique complet pour éviter les erreurs de HEAD^
 
       - name: Ajouter la clé SSH
         uses: webfactory/ssh-agent@v0.5.4
